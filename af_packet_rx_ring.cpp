@@ -19,7 +19,8 @@ Parser files:
 https://github.com/FastVPSEestiOu/fastnetmon/blob/master/src/fastnetmon_packet_parser.c
 https://github.com/FastVPSEestiOu/fastnetmon/blob/master/src/fastnetmon_packet_parser.h
 */
-#include "../fastnetmon_packet_parser.h"
+
+//#include "../fastnetmon_packet_parser.h"
 
 // 4194304 bytes
 unsigned int blocksiz = 1 << 22; 
@@ -32,14 +33,6 @@ struct block_desc {
     uint32_t offset_to_priv;
     struct tpacket_hdr_v1 h1;
 };
-
-/*
-
-Build it:
-g++ ../fastnetmon_packet_parser.c -ofastnetmon_packet_parser.o -c
-g++ af_packet.cpp fastnetmon_packet_parser.o -lboost_thread -lboost_system -lpthread 
-
-*/
 
 // Get interface number by name
 int get_interface_number_by_device_name(int socket_fd, std::string interface_name) {
@@ -59,8 +52,6 @@ int get_interface_number_by_device_name(int socket_fd, std::string interface_nam
     return ifr.ifr_ifindex;
 }
 
-unsigned int af_packet_threads = 1;
-
 uint64_t received_packets = 0;
 uint64_t received_bytes = 0;
 
@@ -73,7 +64,7 @@ void speed_printer() {
         uint64_t packets_after = received_packets;
         uint64_t pps = packets_after - packets_before;
 
-        printf("We process: %llu pps\n", pps);
+        std::cout << "We process: " << pps << " pps" << std::endl;
     }
 }
 

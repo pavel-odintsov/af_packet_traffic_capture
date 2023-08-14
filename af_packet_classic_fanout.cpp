@@ -67,8 +67,6 @@ int get_interface_number_by_device_name(int socket_fd, std::string interface_nam
     return ifr.ifr_ifindex;
 }
 
-unsigned int af_packet_threads = 1;
-
 uint64_t received_packets = 0;
 
 void speed_printer() {
@@ -123,17 +121,6 @@ int setup_socket(std::string interface_name, int fanout_group_id) {
     bind_address.sll_family = AF_PACKET;
     bind_address.sll_protocol = htons(ETH_P_ALL);
     bind_address.sll_ifindex = interface_number;
-
-    // We will follow http://yusufonlinux.blogspot.ru/2010/11/data-link-access-and-zero-copy.html
-    // And this: https://www.kernel.org/doc/Documentation/networking/packet_mmap.txt
-    /*
-
-    struct tpacket_req req;
-    memset(&req, 0, sizeof(req);
-    setsockopt(packet_socket, SOL_PACKET , PACKET_RX_RING , (void*)&req , sizeof(req));
-    setsockopt(packet_socket, SOL_PACKET , PACKET_TX_RING , (void*)&req , sizeof(req));
-    
-    */
 
     int bind_result = bind(packet_socket, (struct sockaddr *)&bind_address, sizeof(bind_address));
 
