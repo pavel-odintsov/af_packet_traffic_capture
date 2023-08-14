@@ -17,5 +17,6 @@ Then run:
 There area three binaries from slowest to fastest:
 - af_packet_classic
 - af_packet_classic_fanout
--  af_packet_rx_ring
+- af_packet_rx_ring
+- af_packet_rx_ring_fanout
  

@@ -4,7 +4,8 @@
 #include <iostream>
 #include <unistd.h>
 
-#include <boost/thread.hpp>
+#include <thread>
+
 #include <sys/mman.h>
 #include <poll.h>
 #include <arpa/inet.h>
@@ -57,7 +58,7 @@ void speed_printer() {
     while (true) {
         uint64_t packets_before = received_packets;
         
-        boost::this_thread::sleep(boost::posix_time::seconds(1));       
+        std::this_thread::sleep_for( std::chrono::seconds(1) );
         
         uint64_t packets_after = received_packets;
         uint64_t pps = packets_after - packets_before;
@@ -234,7 +235,7 @@ int setup_socket(std::string interface_name) {
 }
 
 void start_af_packet_capture(std::string interface_name, int fanout_group_id) {
-    setup_socket(interface_name, fanout_group_id); 
+    setup_socket(interface_name); 
 }
 
 // Could get some speed up on NUMA servers
@@ -243,14 +244,9 @@ bool execute_strict_cpu_affinity = false;
 int main() {
     int fanout_group_id = getpid() & 0xffff;
 
-    boost::thread speed_printer_thread( speed_printer );
-
-    boost::thread_group packet_receiver_thread_group;
+    std::thread speed_printer_thread( speed_printer );
 
     start_af_packet_capture("eth6", 0);
-
-    // Wait all processes for finish
-    packet_receiver_thread_group.join_all();
 
     speed_printer_thread.join();
 }

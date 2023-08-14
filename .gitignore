@@ -34,4 +34,4 @@
 af_packet_classic
 af_packet_classic_fanout
 af_packet_rx_ring
-
+af_packet_rx_ring_fanout
