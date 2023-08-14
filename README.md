@@ -9,7 +9,7 @@ Please read this [article](https://pavel.network/capturing-packets-in-linux-at-a
 
 We recommend using Ubuntu or Debian for building these examples
 
-sudo apt-get install -y libboost-thread-dev
+`sudo apt-get install -y libboost-thread-dev`
 
 Then run:
 `make`
