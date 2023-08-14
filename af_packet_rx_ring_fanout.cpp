@@ -110,7 +110,7 @@ void walk_block(struct block_desc *pbd, const int block_num) {
     received_bytes += bytes;
 }
 
-int setup_socket(std::string interface_name) {
+int setup_socket(std::string interface_name, int fanout_group_id) {
     // More details here: http://man7.org/linux/man-pages/man7/packet.7.html
     // We could use SOCK_RAW or SOCK_DGRAM for second argument
     // SOCK_RAW - raw packets pass from the kernel
@@ -207,6 +207,21 @@ int setup_socket(std::string interface_name) {
         return -1;
     }
  
+   if (fanout_group_id) {
+        // PACKET_FANOUT_LB - round robin
+        // PACKET_FANOUT_CPU - send packets to CPU where packet arrived
+        int fanout_type = PACKET_FANOUT_CPU; 
+
+        int fanout_arg = (fanout_group_id | (fanout_type << 16));
+
+        int setsockopt_fanout = setsockopt(packet_socket, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg));
+
+        if (setsockopt_fanout < 0) {
+            printf("Can't configure fanout\n");
+            return -1;
+        }
+    }
+
     unsigned int current_block_num = 0;
 
     struct pollfd pfd;
@@ -247,7 +262,29 @@ int main() {
 
     boost::thread_group packet_receiver_thread_group;
 
-    start_af_packet_capture("eth6", 0);
+    unsigned int num_cpus = 8;
+    for (int cpu = 0; cpu < num_cpus; cpu++) {
+        boost::thread::attributes thread_attrs;
+
+        if (execute_strict_cpu_affinity) {
+            cpu_set_t current_cpu_set;
+
+            int cpu_to_bind = cpu % num_cpus;
+            CPU_ZERO(&current_cpu_set);
+            // We count cpus from zero
+            CPU_SET(cpu_to_bind, &current_cpu_set);
+
+            int set_affinity_result = pthread_attr_setaffinity_np(thread_attrs.native_handle(), sizeof(cpu_set_t), &current_cpu_set);
+
+            if (set_affinity_result != 0) {
+                printf("Can't set CPU affinity for thread\n");
+            } 
+        }
+
+        packet_receiver_thread_group.add_thread(
+            new boost::thread(thread_attrs, boost::bind(start_af_packet_capture, "eth6", fanout_group_id))
+        );
+    }
 
     // Wait all processes for finish
     packet_receiver_thread_group.join_all();
