@@ -254,52 +254,42 @@ void start_af_packet_capture(std::string interface_name, int fanout_group_id) {
     setup_socket(interface_name, fanout_group_id); 
 }
 
-void get_af_packet_stats() {
-// getsockopt PACKET_STATISTICS
-}
-
 // Could get some speed up on NUMA servers
 bool execute_strict_cpu_affinity = false;
-
-bool use_multiple_fanout_processes = true;
 
 int main() {
     int fanout_group_id = getpid() & 0xffff;
 
     boost::thread speed_printer_thread( speed_printer );
 
-    if (use_multiple_fanout_processes) {
-        boost::thread_group packet_receiver_thread_group;
+    boost::thread_group packet_receiver_thread_group;
 
-        unsigned int num_cpus = 8;
-        for (int cpu = 0; cpu < num_cpus; cpu++) {
-            boost::thread::attributes thread_attrs;
+    unsigned int num_cpus = 8;
+    for (int cpu = 0; cpu < num_cpus; cpu++) {
+        boost::thread::attributes thread_attrs;
 
-            if (execute_strict_cpu_affinity) {
-                cpu_set_t current_cpu_set;
+        if (execute_strict_cpu_affinity) {
+            cpu_set_t current_cpu_set;
 
-                int cpu_to_bind = cpu % num_cpus;
-                CPU_ZERO(&current_cpu_set);
-                // We count cpus from zero
-                CPU_SET(cpu_to_bind, &current_cpu_set);
+            int cpu_to_bind = cpu % num_cpus;
+            CPU_ZERO(&current_cpu_set);
+            // We count cpus from zero
+            CPU_SET(cpu_to_bind, &current_cpu_set);
 
-                int set_affinity_result = pthread_attr_setaffinity_np(thread_attrs.native_handle(), sizeof(cpu_set_t), &current_cpu_set);
-    
-                if (set_affinity_result != 0) {
-                    printf("Can't set CPU affinity for thread\n");
-                } 
-            }
+            int set_affinity_result = pthread_attr_setaffinity_np(thread_attrs.native_handle(), sizeof(cpu_set_t), &current_cpu_set);
 
-            packet_receiver_thread_group.add_thread(
-                new boost::thread(thread_attrs, boost::bind(start_af_packet_capture, "eth6", fanout_group_id))
-            );
+            if (set_affinity_result != 0) {
+                printf("Can't set CPU affinity for thread\n");
+            } 
         }
 
-        // Wait all processes for finish
-        packet_receiver_thread_group.join_all();
-    } else {    
-        start_af_packet_capture("eth6", 0);
+        packet_receiver_thread_group.add_thread(
+            new boost::thread(thread_attrs, boost::bind(start_af_packet_capture, "eth6", fanout_group_id))
+        );
     }
+
+    // Wait all processes for finish
+    packet_receiver_thread_group.join_all();
 
     speed_printer_thread.join();
 }

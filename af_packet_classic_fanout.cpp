@@ -174,10 +174,6 @@ void start_af_packet_capture(std::string interface_name, int fanout_group_id) {
     }
 } 
 
-void get_af_packet_stats() {
-// getsockopt PACKET_STATISTICS
-}
-
 // Could get some speed up on NUMA servers
 bool execute_strict_cpu_affinity = false;
 
