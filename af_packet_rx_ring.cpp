@@ -234,7 +234,7 @@ int setup_socket(std::string interface_name) {
     return packet_socket;
 }
 
-void start_af_packet_capture(std::string interface_name, int fanout_group_id) {
+void start_af_packet_capture(std::string interface_name) {
     setup_socket(interface_name); 
 }
 
@@ -246,7 +246,7 @@ int main() {
 
     std::thread speed_printer_thread( speed_printer );
 
-    start_af_packet_capture("eth6", 0);
+    start_af_packet_capture("eth6");
 
     speed_printer_thread.join();
 }
