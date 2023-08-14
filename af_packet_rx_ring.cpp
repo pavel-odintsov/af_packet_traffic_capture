@@ -20,8 +20,6 @@ https://github.com/FastVPSEestiOu/fastnetmon/blob/master/src/fastnetmon_packet_p
 https://github.com/FastVPSEestiOu/fastnetmon/blob/master/src/fastnetmon_packet_parser.h
 */
 
-//#include "../fastnetmon_packet_parser.h"
-
 // 4194304 bytes
 unsigned int blocksiz = 1 << 22; 
 // 2048 bytes

@@ -15,16 +15,6 @@
 #include <linux/if_packet.h>
 #include <net/ethernet.h> /* the L2 protocols */
 
-// #include "../fastnetmon_packet_parser.h"
-
-/*
-
-Build it:
-g++ ../fastnetmon_packet_parser.c -ofastnetmon_packet_parser.o -c
-g++ af_packet.cpp fastnetmon_packet_parser.o -lboost_thread -lboost_system -lpthread 
-
-*/
-
 /*
 Parser files:
 https://github.com/FastVPSEestiOu/fastnetmon/blob/master/src/fastnetmon_packet_parser.c
@@ -162,8 +152,6 @@ void start_af_packet_capture(std::string interface_name) {
 
 int main() {
     std::thread speed_printer_thread( speed_printer );
-
-    int fanout_group_id = getpid() & 0xffff;
 
     start_af_packet_capture("eth6");
 
