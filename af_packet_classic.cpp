@@ -4,7 +4,9 @@
 #include <iostream>
 #include <unistd.h>
 
-#include <boost/thread.hpp>
+#include <iostream>
+#include <chrono>
+#include <thread>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -13,7 +15,7 @@
 #include <linux/if_packet.h>
 #include <net/ethernet.h> /* the L2 protocols */
 
-#include "../fastnetmon_packet_parser.h"
+// #include "../fastnetmon_packet_parser.h"
 
 /*
 
@@ -73,12 +75,12 @@ void speed_printer() {
     while (true) {
         uint64_t packets_before = received_packets;
         
-        boost::this_thread::sleep(boost::posix_time::seconds(1));       
+        std::this_thread::sleep_for(std::chrono::seconds(1));       
         
         uint64_t packets_after = received_packets;
         uint64_t pps = packets_after - packets_before;
 
-        printf("We process: %llu pps\n", pps);
+        std::cout << "We process: " << pps << " pps" << std::endl;
     }
 }
 
@@ -122,17 +124,6 @@ int setup_socket(std::string interface_name) {
     bind_address.sll_protocol = htons(ETH_P_ALL);
     bind_address.sll_ifindex = interface_number;
 
-    // We will follow http://yusufonlinux.blogspot.ru/2010/11/data-link-access-and-zero-copy.html
-    // And this: https://www.kernel.org/doc/Documentation/networking/packet_mmap.txt
-    /*
-
-    struct tpacket_req req;
-    memset(&req, 0, sizeof(req);
-    setsockopt(packet_socket, SOL_PACKET , PACKET_RX_RING , (void*)&req , sizeof(req));
-    setsockopt(packet_socket, SOL_PACKET , PACKET_TX_RING , (void*)&req , sizeof(req));
-    
-    */
-
     int bind_result = bind(packet_socket, (struct sockaddr *)&bind_address, sizeof(bind_address));
 
     if (bind_result == -1) {
@@ -170,7 +161,7 @@ void start_af_packet_capture(std::string interface_name) {
 } 
 
 int main() {
-     boost::thread speed_printer_thread( speed_printer );
+    std::thread speed_printer_thread( speed_printer );
 
     int fanout_group_id = getpid() & 0xffff;
 
